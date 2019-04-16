@@ -8,6 +8,7 @@ main = print("Ejercicio Pinky y Cerebro")
 type Especie = String
 type Capacidad = String
 type Transformacion = Animal -> Animal
+type Criterio = Animal -> Bool
 
 data Animal = Animal {
     coeficiente :: Integer,
@@ -31,13 +32,13 @@ pinkificar animal = animal { capacidades = [] }
 -- superpoderes:    En caso de ser un elefante: le da la habilidad “no tenerle miedo a los ratones”
 --                  En caso de ser un ratón con coeficiente intelectual mayor a 100: le agrega la habilidad de “hablar”. 
 --                  Si no, lo deja como está. 
-esEspecie :: Especie -> Animal -> Bool
+esEspecie :: Especie -> Criterio
 esEspecie _especie animal = especie animal == _especie
 
-tieneCoeficienteMayorA :: Integer -> Animal -> Bool
+tieneCoeficienteMayorA :: Integer -> Criterio
 tieneCoeficienteMayorA num animal = coeficiente animal >= num
 
-esRatonInteligente :: Animal -> Bool
+esRatonInteligente :: Criterio
 esRatonInteligente animal = (esEspecie "Raton" animal) && (tieneCoeficienteMayorA 100 animal) 
 
 agregarCapacidad :: Capacidad -> Animal -> Animal 
@@ -51,22 +52,29 @@ superpoderes animal
 
 -- 3.   Desarrollar los siguientes criterios:
 -- antropomorfico: si tiene la habilidad de hablar y su coeficiente es mayor a 60.
-tieneCapacidad :: String -> Animal -> Bool
+tieneCapacidad :: Capacidad -> Criterio
 tieneCapacidad capacidad animal = elem capacidad $ capacidades animal
 
-antropomorfico :: Animal -> Bool
+antropomorfico :: Criterio
 antropomorfico animal = (tieneCapacidad "Hablar" animal) && (tieneCoeficienteMayorA 60 animal)
 
 -- noTanCuerdo: si tiene más de dos habilidades pinkiescas, es decir, que empiece con "pinki". 
-esCapacidadPinkiesca :: String -> Bool
-esCapacidadPinkiesca = isPrefixOf "Pinki"
+esCapacidadPinkiesca :: Capacidad -> Bool
+esCapacidadPinkiesca = isPrefixOf "Pinki" --needs import Data.List
+--esCapacidadPinkiesca = zipWith (==) "Pinki"
 
-habilidadesPinkiescas :: [String] -> [String]
-habilidadesPinkiescas = filter esCapacidadPinkiesca
+capacidadesPinkiescas :: [Capacidad] -> [Capacidad]
+capacidadesPinkiescas = filter esCapacidadPinkiesca
 
-noTanCuerdo :: Animal -> Bool
-noTanCuerdo animal = length (habilidadesPinkiescas $ capacidades animal) >= 2
+noTanCuerdo :: Criterio
+noTanCuerdo animal = length (capacidadesPinkiescas $ capacidades animal) >= 2
 
+-- 4. 
 
+data Experimento = Experimento {
+  transformacion1 :: Transformacion,
+  transformacion2 :: Transformacion,
+  criterioExito :: Criterio
+}
 
 
