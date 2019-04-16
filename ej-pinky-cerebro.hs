@@ -61,7 +61,8 @@ antropomorfico animal = (tieneCapacidad "Hablar" animal) && (tieneCoeficienteMay
 -- noTanCuerdo: si tiene más de dos habilidades pinkiescas, es decir, que empiece con "pinki". 
 esCapacidadPinkiesca :: Capacidad -> Bool
 esCapacidadPinkiesca = isPrefixOf "Pinki" --needs import Data.List
---esCapacidadPinkiesca = zipWith (==) "Pinki"
+--esCapacidadPinkiesca = zipWith (==) "Pinki" --corregir
+--esCapacidadPinkiesca capacidad = take 5 capacidad == "Pinki"
 
 capacidadesPinkiescas :: [Capacidad] -> [Capacidad]
 capacidadesPinkiescas = filter esCapacidadPinkiesca
