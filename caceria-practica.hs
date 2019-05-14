@@ -24,16 +24,15 @@ level pj = ceiling (((xp pj) * (xp pj)) / ((xp pj) + 1))
 huntingLevel :: PJ -> Float
 huntingLevel pj = (element pj) (strenght pj)
 
-type Alchemist = AlchemistType -> PJ -> PJ
-type AlchemistType = Element -> Element
+type Alchemist = PJ -> PJ
 
-typeAprentice el = 2*el
-
-typeMaster years el = typeAprentice ((*).(*).(/) el years ((1.1*).el))
-
+typeAprentice pj = pj { element = (2.0 * (element pj))}
+typeMaster years pj = pj { element = typeAprentice ((1+(0.1*years)) * (element pj)) }
 typeSwindler = id
-
 typeOther = (\x -> x * 3)
 
+danCapacidadCazaMayorA :: Float -> PJ -> [Alchemist] -> [Alchemist]
+danCapacidadCazaMayorA capacidad pj alquimistas = filter (capacidadMayorA capacidad pj) alquimistas
 
-
+capacidadMayorA :: Float -> PJ -> Alchemist -> Bool
+capacidadMayorA capacidad pj alquimista = ((>capacidad).huntingLevel.alquimista) pj 
