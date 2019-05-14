@@ -5,7 +5,7 @@ data Pirata = Pirata {
     botin :: [Tesoro]
 } deriving (Show)
 
--- DATA CON DISTINTAS INSTANCIAS:
+-- DATA COMPUESTO:
 
 data Tesoro = 
   UnTesoro {
