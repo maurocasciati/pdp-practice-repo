@@ -1,9 +1,13 @@
 import Text.Show.Functions
+import Data.List
 
 data Pirata = Pirata {
     nombrePirata :: String,
     botin :: [Tesoro]
 } deriving (Show)
+
+instance Eq Pirata where 
+  p1 == p2 = nombrePirata p1 == nombrePirata p2
 
 -- Tesoros
 
@@ -150,9 +154,17 @@ data Barco = Barco {
     formaDeSaquear :: FormaDeSaqueo
 } deriving (Show)
 
+instance Eq Barco where 
+  b1 == b2 = nombreBarco b1 == nombreBarco b2 && (tripulacion b1) == (tripulacion b2)
+
+instance Ord Barco where
+  b1 <= b2 = length (tripulacion b1) <= length (tripulacion b2)
+
 --Un pirata se incorpora a la tripulación de un barco
-barcoIncorporaTripulante :: Barco -> Pirata -> Barco
-barcoIncorporaTripulante barco pirata = barco {tripulacion = pirata:(tripulacion barco)}
+barcoIncorporaTripulante :: Pirata -> Barco -> Barco
+barcoIncorporaTripulante pirata barco 
+    | elem pirata (tripulacion barco) = barco
+    | otherwise = barco {tripulacion = pirata:(tripulacion barco)}
 
 --Un pirata abandona la tripulación de un barco
 barcoAbandonaTripulante :: Barco -> Pirata -> Barco
@@ -180,8 +192,8 @@ _saquear formaDeSaquear pirata tesoro = saquear pirata formaDeSaquear tesoro
 piratasSaqueanTesoros :: FormaDeSaqueo -> [Pirata] -> [Tesoro] -> [Pirata]
 piratasSaqueanTesoros formaDeSaquear piratas tesoros = zipWith (_saquear formaDeSaquear) piratas tesoros
 
-barcoSaqueaCiudad :: Barco -> Ciudad -> Barco
-barcoSaqueaCiudad barco ciudad = barco { tripulacion = piratasSaqueanTesoros (formaDeSaquear barco) (tripulacion barco) (tesoros ciudad) }
+barcoSaqueaCiudad :: Ciudad -> Barco -> Barco
+barcoSaqueaCiudad ciudad barco = barco { tripulacion = piratasSaqueanTesoros (formaDeSaquear barco) (tripulacion barco) (tesoros ciudad) }
 
 --Un barco aborda otro en altamar:
 -- Cuando un barco aborda a otro que se encuentra en altamar, los piratas atacan uno a uno a los del barco abordado,
@@ -210,18 +222,6 @@ barcoAbordadoPorOtro barcoAbordado barco = barcoAbordado { tripulacion = piratas
 
 abordamientoDeBarcoEnAltaMar :: Barco -> Barco -> (Barco,Barco)
 abordamientoDeBarcoEnAltaMar barco barcoAbordado = (barcoAbordaOtroBarco barco barcoAbordado,barcoAbordadoPorOtro barcoAbordado barco)
-
--- Universidad Pirata
-
-data TipoUniversidad = AntiDictaminante | BuitreAlternativa | AtlanticaInofensiva
-
-class UniversidadPirata a where
-  desarrollarSaqueo :: a -> Barco -> Barco
-
-instance UniversidadPirata TipoUniversidad where
-  desarrollarSaqueo AntiDictaminante barco = barco --{  formaDeSaquear = (not formaDeSaquear)}
-  desarrollarSaqueo BuitreAlternativa barco = barco { formaDeSaquear = (tesoroEsSaqueable ([(formaDeSaquear barco)] ++ [saqueoBuitre, tesoroEsValioso]))}
-  desarrollarSaqueo AtlanticaInofensiva barco = barco
 
 ----- Datos para peliculas:
 
@@ -272,12 +272,12 @@ carmenPatagones = Ciudad "Carmen de Patagones" [espada, oro, oro, oro]
 ------Pelicula
 
 -- jackSparrow se une al perla negra
-escena1 :: Barco -> Pirata -> Barco
-escena1 barco pirata = barcoIncorporaTripulante barco pirata
+escena1 :: Pirata -> Barco -> Barco
+escena1 = barcoIncorporaTripulante
 
 -- el perla negra desembarca en una isla desierta
 escena2 :: Barco -> Isla -> Pirata -> Barco
-escena2 barco1 isla pirata = anclarEnIslaDeshabitada (escena1 barco1 pirata) isla
+escena2 barco1 isla pirata = anclarEnIslaDeshabitada (escena1 pirata barco1) isla
 
 -- elholandes errante ve el perla negra anclado y lo ataca
 escena3 :: Barco -> Barco -> Isla -> Pirata -> Barco
@@ -285,7 +285,7 @@ escena3 barco1 barco2 isla pirata = barcoAbordadoPorOtro (escena2 barco1 isla pi
 
 -- el perla negra ataca portRoyal para recuperar tesoros
 escena4 :: Barco -> Barco -> Ciudad -> Isla -> Pirata -> Barco
-escena4 barco1 barco2 ciudad isla pirata = barcoSaqueaCiudad (escena3 barco1 barco2 isla pirata) ciudad
+escena4 barco1 barco2 ciudad isla pirata = barcoSaqueaCiudad ciudad (escena3 barco1 barco2 isla pirata) 
 
 -- Jack Sparrow y el perla negra se vengan del holandes
 escena5 :: Barco -> Barco -> Ciudad -> Isla -> Pirata -> Barco
@@ -294,19 +294,51 @@ escena5 barco1 barco2 ciudad isla pirata = barcoAbordaOtroBarco (escena4 barco1 
 pelicula :: Barco -> Barco -> Ciudad -> Isla -> Pirata -> Barco
 pelicula barco1 barco2 ciudad isla pirata = escena5 barco1 barco2 ciudad isla pirata
 
-------- Historias de los barcos:
+
+-- Universidad Pirata
+
+data TipoUniversidad = AntiDictaminante | BuitreAlternativa | AtlanticaInofensiva
+
+class UniversidadPirata a where
+  desarrollarSaqueo :: a -> Barco -> Barco
+
+instance UniversidadPirata TipoUniversidad where
+  desarrollarSaqueo AntiDictaminante barco = barco {  formaDeSaquear = not.formaDeSaquear barco}
+  desarrollarSaqueo BuitreAlternativa barco = barco { formaDeSaquear = (tesoroEsSaqueable ([(formaDeSaquear barco)] ++ [saqueoBuitre, tesoroEsValioso]))}
+  desarrollarSaqueo AtlanticaInofensiva barco = barco
+
+-- Historias de los barcos
 
 type Situacion = Barco -> Barco
 
-situacionWillSubeAlBarco :: Situacion
-situacionWillSubeAlBarco barco = barcoIncorporaTripulante barco willTurner
+situacionSubeAlBarco :: Pirata -> Situacion
+situacionSubeAlBarco = barcoIncorporaTripulante
 
-situacionBarcoAbordaAlHolandesErrante :: Situacion
-situacionBarcoAbordaAlHolandesErrante barco = barcoAbordaOtroBarco barco holandesErrante
+situacionBarcoAbordaBarco :: Barco -> Situacion
+situacionBarcoAbordaBarco = barcoAbordaOtroBarco
 
-situacionBarcoAtacaPortRoyale :: Situacion
-situacionBarcoAtacaPortRoyale barco = barcoSaqueaCiudad barco portRoyal
+situacionBarcoAtacaCiudad :: Ciudad -> Situacion
+situacionBarcoAtacaCiudad = barcoSaqueaCiudad 
 
-historiaDelBarco :: Barco -> [Situacion] -> Barco
-historiaDelBarco = foldl (\a b -> b a)
+historiaDelBarco :: [Situacion] -> Barco -> Barco
+historiaDelBarco situaciones barco = foldr ($) barco situaciones
 
+esHistoriaInofensiva :: [Situacion] -> Barco -> Bool
+esHistoriaInofensiva situaciones barco = barco == historiaDelBarco situaciones barco
+
+barcosConHistoriaInofensiva :: [Barco] -> [Situacion] -> [Barco]
+barcosConHistoriaInofensiva barcos situaciones = filter (esHistoriaInofensiva situaciones) barcos
+
+barcoConHistoriaConTripulacionMasNumerosa :: [Barco] -> [Situacion] -> Barco
+barcoConHistoriaConTripulacionMasNumerosa barcos situaciones = maximum (map (historiaDelBarco situaciones) barcos)
+
+-- Proliferación de piratas
+
+obtenerBarcoConTripulacionInfinita :: Barco
+obtenerBarcoConTripulacionInfinita = Barco "NombreBarco" (map inventarPirata [1.00..]) (tesoroConNombre "oro") 
+
+inventarPirata :: Double -> Pirata
+inventarPirata valor = (Pirata ("nombre Pirata" ++ show valor) [UnTesoro "tesoro" valor])
+
+--main = do 
+--  putStrLn "TP"
