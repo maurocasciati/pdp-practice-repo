@@ -69,6 +69,8 @@ aplicarFuncionFoldr var listaFunciones = foldr ($) var listaFunciones
 --WIPWITH: aplica la funcion a los parametros de dos listas (uno a uno en orden)
 nombreFuncionZipWith funcion lista1 lista2 = zipWith funcion lista1 lista2
 
+-- LISTAS INFINITAS: [1..] o directamente (repeat var)
+
 -- EXPRESION LAMBDA:
 invertirConLambda = (\a b -> b a)
 sumarUnoConLambda = (\x -> x + 1)
