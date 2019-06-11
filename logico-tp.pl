@@ -3,6 +3,17 @@ tarea(dormirEnElCongreso, 1).
 tarea(prensa, 7).
 tarea(canillita, 8).
 
+tarea(votarLeyes, 4).
+tarea(redactarLeyes, 8).
+tarea(investigar, 6).
+tarea(redactarInformes, 5).
+tarea(defender, 8).
+tarea(juzgar, 8).
+tarea(cenarConOtrosLideres, 5).
+tarea(tareasAdministrativas, 6).
+tarea(presidirPais, 5).
+tarea(investigarOposicion, 5).
+
 trabajo(claudia, administrativo).
 trabajo(jorge, dormirEnElCongreso).
 trabajo(alberto, dormirEnElCongreso).
@@ -112,17 +123,6 @@ proyecto(anunciosEconomicos, 4, ejecutivo).
 proyecto(juicioFinal, 1, judicial).  
 proyecto(guerraDePrensa, 1, prensa). 
 
-tarea(votarLeyes, 4).
-tarea(redactarLeyes, 8).
-tarea(investigar, 6).
-tarea(redactarInformes, 5).
-tarea(defender, 8).
-tarea(juzgar, 8).
-tarea(cenarConOtrosLideres, 5).
-tarea(tareasAdministrativas, 6).
-tarea(presidirPais, 5).
-tarea(investigarOposicion, 5).
-
 procedencia(votarLeyes, redactarLeyes, leyDePymes). 
 procedencia(investigar, votarLeyes, leyDePymes). 
 procedencia(redactarInformes, investigar, leyDePymes). 
@@ -133,7 +133,7 @@ procedencia(presidirPais, cenarConOtrosLideres, anunciosEconomicos).
 procedencia(investigar, investigarOposicion, guerraDePrensa). 
 
 esTareaInicial(Tarea, Proyecto):- 
-    procedencia(TareaPadre, Tarea, Proyecto), 
+    procedencia(_, Tarea, Proyecto), 
     not(procedencia(Tarea, _, Proyecto)).
 
 diasDeProyecto(Tarea, Proyecto, Dias):-
@@ -153,5 +153,5 @@ diaQueTerminaElProyecto(Proyecto,DiasTotales):-
     diasDeProyecto(Tarea, Proyecto, DiasTotales). 
     
 esTareaFinal(Tarea,Proyecto):- 
-    procedencia(Tarea, TareaPrevia,Proyecto), 
+    procedencia(Tarea, _,Proyecto), 
     not(procedencia(_, Tarea, Proyecto)).
